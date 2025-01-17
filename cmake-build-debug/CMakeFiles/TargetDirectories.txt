@@ -1,0 +1,3 @@
+/cygdrive/c/Users/User/CLionProjects/CPPEX4/cmake-build-debug/CMakeFiles/CPPEX4.dir
+/cygdrive/c/Users/User/CLionProjects/CPPEX4/cmake-build-debug/CMakeFiles/edit_cache.dir
+/cygdrive/c/Users/User/CLionProjects/CPPEX4/cmake-build-debug/CMakeFiles/rebuild_cache.dir
