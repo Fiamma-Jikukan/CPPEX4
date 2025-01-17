@@ -72,7 +72,7 @@ private:
     unsigned int size;
 
 public:
-    explicit BinarySearchTree(T &rootData);
+    explicit BinarySearchTree();
 
     ~BinarySearchTree();
 
@@ -93,6 +93,8 @@ public:
     void print();
 
     unsigned int GetSize() const;
+    Node<T> * GetRoot() const;
+
 };
 
 

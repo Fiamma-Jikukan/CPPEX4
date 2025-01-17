@@ -17,4 +17,10 @@ add_executable(CPPEX4 main.cpp
         BinarySearchTree.cpp
         BinarySearchTree.h
         SingleRotorDrone.cpp
-        SingleRotorDrone.h)
+        SingleRotorDrone.h
+        MultiRotorDrone.cpp
+        MultiRotorDrone.h
+        FixedWingDrone.cpp
+        FixedWingDrone.h
+        FixedWingHybridVTOL.cpp
+        FixedWingHybridVTOL.h)

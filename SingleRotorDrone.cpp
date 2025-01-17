@@ -21,7 +21,6 @@ void SingleRotorDrone::UpdateSpeed(const TDVector &globalBest, const TDVector &o
     const TDVector element3 = gamma * r2 * (globalBest - oldPosition);
 
 
-    const TDVector new_speed = (0.25 * oldVelocity) + (r1 * (personal - oldPosition)) + (
-                                   r2 * (globalBest - oldPosition));
+    const TDVector new_speed = element1 + element2 + element3;
     SetVelocity(new_speed);
 }

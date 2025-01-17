@@ -13,13 +13,14 @@ private:
     TDVector position;
     TDVector velocity;
     TDVector personalBest;
+    bool globalBest;
 
 public:
     Drone();
 
     Drone(unsigned int id, const TDVector &position, const TDVector &velocity, const TDVector &personalBest);
 
-    ~Drone();
+    virtual ~Drone();
 
     Drone(const Drone &other);
 

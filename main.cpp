@@ -1,14 +1,23 @@
 #include <fstream>
+#include <sstream>
 #include "Search.h"
+#include "BinarySearchTree.h"
+#include "FixedWingDrone.h"
+#include "FixedWingHybridVTOL.h"
+#include "MultiRotorDrone.h"
+#include "SingleRotorDrone.h"
 using namespace std;
 
 bool validateConfig(const string &config);
 
-bool validateInit(const string &init);
+bool validateInit(const string &init, TDVector &forestMin, TDVector &forestMax);
 
 bool validateOutput(const string &output);
 
-Drone *GetDrones(const string &input2);
+// Drone *GetDrones(const string &input2);
+TDVector GetForestMin(const string &input1);
+
+TDVector GetForestMax(const string &input1);
 
 TDVector GetTarget(const string &input1);
 
@@ -16,18 +25,31 @@ unsigned int GetMaxIter(const string &input1);
 
 unsigned int GetNumOfDrones(const string &input2);
 
-unsigned int GetGlobalBest(const Drone *drones, const TDVector &target, unsigned int num_of_drones); // returns the index of the drone closest to the target
+TDVector GetGlobalBest(const string &input2, const TDVector &target);
 
+
+BinarySearchTree<Drone> *GetDroneTree(const string &input2);
+
+bool makeRandSeed(const string &inputRand);
+
+bool checkDroneType(char droneType);
 
 int main(const int argc, char **argv) {
     // validate input
-    if (argc != 4) {
+    if (argc != 4 && argc != 5) {
         cerr << "Error; invalid input" << endl;
         return 1;
     }
     const bool validConfig = validateConfig(argv[1]);
     const bool validInit = validateInit(argv[2]);
     const bool validOutput = validateOutput(argv[3]);
+    if (argc == 5) {
+        const string seedInput = argv[4];
+        if (makeRandSeed(seedInput) == false) {
+            srand(time(NULL));
+        }
+    }
+
     if (!validConfig || !validInit || !validOutput) {
         cerr << "Error; invalid input" << endl;
         return 1;
@@ -36,10 +58,10 @@ int main(const int argc, char **argv) {
     // get data for search
     const TDVector target = GetTarget(argv[1]);
     const unsigned int maxIter = GetMaxIter(argv[1]);
-    Drone *drones = GetDrones(argv[2]);
+    BinarySearchTree<Drone> *drone_tree = GetDroneTree(argv[2]);
     const unsigned int numOfDrones = GetNumOfDrones(argv[2]);
-    const unsigned int globalBest = GetGlobalBest(drones, target, numOfDrones);
-    const Forest forest(drones, numOfDrones);
+    const TDVector globalBest = GetGlobalBest(argv[2], target);
+    const Forest forest(drone_tree, numOfDrones);
     for (unsigned int i = 0; i < numOfDrones; i++) {
         forest.AddDroneToCell(drones[i].GetPosition());
     }
@@ -50,24 +72,36 @@ int main(const int argc, char **argv) {
     search.StartSearch();
 
 
-
     return 0;
 }
 
 bool validateConfig(const string &config) {
     ifstream config_file(config);
     if (!config_file.is_open()) {
+        config_file.close();
         return false;
     }
+    // validate forest size
+    unsigned int forest_x_min, forest_x_max, forest_y_min, forest_y_max;
+    if (!(config_file >> forest_x_min >> forest_x_max >> forest_y_min >> forest_y_max)) {
+        config_file.close();
+        return false;
+    }
+    if ((forest_x_min > forest_x_max) || (forest_y_min > forest_y_max)) {
+        config_file.close();
+        return false;
+    }
+    // validate target
     double target_x, target_y;
     if (!(config_file >> target_x >> target_y)) {
         config_file.close();
         return false;
     }
-    if (target_x < 0 || target_y < 0 || target_x > FOREST_WIDTH || target_y > FOREST_HEIGHT) {
+    if (target_x < forest_x_min || target_y < forest_y_min || target_x > forest_x_max || target_y > forest_y_max) {
         config_file.close();
         return false;
     }
+    // validate max num of iterations
     int max_iter;
     if (!(config_file >> max_iter) || max_iter < 0) {
         config_file.close();
@@ -82,11 +116,12 @@ bool validateConfig(const string &config) {
     return true;
 }
 
-bool validateInit(const string &init) {
+bool validateInit(const string &init, TDVector &forestMin, TDVector &forestMax) {
     ifstream init_file(init);
     if (!init_file.is_open()) {
         return false;
     }
+    // validate num of drones
     unsigned int num_of_drones;
     if (!(init_file >> num_of_drones)) {
         init_file.close();
@@ -96,13 +131,20 @@ bool validateInit(const string &init) {
         init_file.close();
         return false;
     }
+    // validate drones
     for (unsigned int i = 0; i < num_of_drones; i++) {
+        char type_of_drone;
         double pos_x, pos_y, vel_x, vel_y;
-        if (!(init_file >> pos_x >> pos_y >> vel_x >> vel_y)) {
+        if (!(init_file >> type_of_drone >> pos_x >> pos_y >> vel_x >> vel_y)) {
             init_file.close();
             return false;
         }
-        if (pos_x < 0 || pos_x > FOREST_WIDTH || pos_y < 0 || pos_y > FOREST_HEIGHT) {
+        if (!checkDroneType(type_of_drone)) {
+            init_file.close();
+            return false;
+        }
+        if (pos_x < forestMin.GetX() || pos_x > forestMax.GetX() || pos_y < forestMin.GetY() || pos_y > forestMax.
+            GetY()) {
             init_file.close();
             return false;
         }
@@ -125,22 +167,22 @@ bool validateOutput(const string &output) {
     return true;
 }
 
-Drone *GetDrones(const string &input2) {
-    ifstream input_drones(input2);
-    unsigned int num_of_drones;
-    input_drones >> num_of_drones;
-    Drone *drones = new Drone[num_of_drones];
-    for (unsigned int drone = 0; drone < num_of_drones; drone++) {
-        double pos_x, pos_y, vel_x, vel_y;
-        input_drones >> pos_x >> pos_y >> vel_x >> vel_y;
-        TDVector pos = TDVector(pos_x, pos_y);
-        TDVector vel = TDVector(vel_x, vel_y);
-        const Drone d(drone, pos, vel, pos);
-        drones[drone] = d;
-    }
-    input_drones.close();
-    return drones;
-}
+// Drone *GetDrones(const string &input2) {
+//     ifstream input_drones(input2);
+//     unsigned int num_of_drones;
+//     input_drones >> num_of_drones;
+//     Drone *drones = new Drone[num_of_drones];
+//     for (unsigned int drone = 0; drone < num_of_drones; drone++) {
+//         double pos_x, pos_y, vel_x, vel_y;
+//         input_drones >> pos_x >> pos_y >> vel_x >> vel_y;
+//         TDVector pos = TDVector(pos_x, pos_y);
+//         TDVector vel = TDVector(vel_x, vel_y);
+//         const Drone d(drone, pos, vel, pos);
+//         drones[drone] = d;
+//     }
+//     input_drones.close();
+//     return drones;
+// }
 
 unsigned int GetNumOfDrones(const string &input2) {
     ifstream input_drones(input2);
@@ -150,10 +192,28 @@ unsigned int GetNumOfDrones(const string &input2) {
     return num_of_drones;
 }
 
+TDVector GetForestMin(const string &input1) {
+    ifstream input_target(input1);
+    double forest_min_x, forest_min_y, forest_max_x, forest_max_y, target_x, target_y;
+    input_target >> forest_min_x >> forest_min_y >> forest_max_x >> forest_max_y >> target_x >> target_y;
+    TDVector forest_min(forest_min_x, forest_min_y);
+    input_target.close();
+    return forest_min;
+}
+
+TDVector GetForestMax(const string &input1) {
+    ifstream input_target(input1);
+    double forest_min_x, forest_min_y, forest_max_x, forest_max_y, target_x, target_y;
+    input_target >> forest_min_x >> forest_min_y >> forest_max_x >> forest_max_y >> target_x >> target_y;
+    TDVector forest_max(forest_max_x, forest_max_y);
+    input_target.close();
+    return forest_max;
+}
+
 TDVector GetTarget(const string &input1) {
     ifstream input_target(input1);
-    double target_x, target_y;
-    input_target >> target_x >> target_y;
+    double forest_min_x, forest_min_y, forest_max_x, forest_max_y, target_x, target_y;
+    input_target >> forest_min_x >> forest_min_y >> forest_max_x >> forest_max_y >> target_x >> target_y;
     TDVector target(target_x, target_y);
     input_target.close();
     return target;
@@ -161,21 +221,76 @@ TDVector GetTarget(const string &input1) {
 
 unsigned int GetMaxIter(const string &input1) {
     ifstream input_target(input1);
-    double target_x, target_y, max_iter;
-    input_target >> target_x >> target_y >> max_iter;
+    double forest_min_x, forest_min_y, forest_max_x, forest_max_y, target_x, target_y;
+    unsigned int max_iter;
+    input_target >> forest_min_x >> forest_min_y >> forest_max_x >> forest_max_y >> target_x >> target_y >> max_iter;
     input_target.close();
     return max_iter;
 }
 
-unsigned int GetGlobalBest(const Drone *drones, const TDVector &target, const unsigned int num_of_drones) {
-    unsigned int closest_drone_index = 0;
-    double closest_distance = drones[0].GetPosition() * target; // calculates the distance between two coordinates - operator defined in TDVector
-    for (unsigned int drone = 0; drone < num_of_drones; drone++) {
-        const double distance = drones[drone].GetPosition() * target;
-        if (distance < closest_distance) {
-            closest_distance = distance;
-            closest_drone_index = drone;
+TDVector GetGlobalBest(const string &input2, const TDVector &target) {
+    unsigned int num_of_drones;
+    ifstream input_target(input2);
+    input_target >> num_of_drones;
+    double global_best_distance = 0.0;
+    TDVector global_best(0,0);
+    for (unsigned int droneID = 0; droneID < num_of_drones; droneID++) {
+        char type_of_drone;
+        double pos_x, pos_y, vel_x, vel_y;
+        input_target >> type_of_drone >> pos_x >> pos_y >> vel_x >> vel_y;
+        TDVector pos = TDVector(pos_x, pos_y);
+        const double current_distance = pos * target;
+        if (droneID == 0 || current_distance < global_best_distance) {
+            global_best_distance = current_distance;
+            global_best = pos;
         }
+
     }
-    return closest_drone_index;
+    input_target.close();
+    return global_best;
+
+}
+
+
+BinarySearchTree<Drone> *GetDroneTree(const string &input2) {
+    BinarySearchTree<Drone > *tree = new BinarySearchTree<Drone>();
+    unsigned int num_of_drones;
+    ifstream input_target(input2);
+    input_target >> num_of_drones;
+    for (unsigned int droneID = 0; droneID < num_of_drones; droneID++) {
+        char type_of_drone;
+        double pos_x, pos_y, vel_x, vel_y;
+        input_target >> type_of_drone >> pos_x >> pos_y >> vel_x >> vel_y;
+        TDVector pos = TDVector(pos_x, pos_y);
+        TDVector vel = TDVector(vel_x, vel_y);
+        Drone *drone;
+        if (type_of_drone == 'S') {
+            new SingleRotorDrone(droneID, pos, vel, pos);
+        } else if (type_of_drone == 'M') {
+            new MultiRotorDrone(droneID, pos, vel, pos);
+        } else if (type_of_drone == 'W') {
+            new FixedWingDrone(droneID, pos, vel, pos);
+        } else if (type_of_drone == 'H') {
+            new FixedWingHybridVTOL(droneID, pos, vel, pos);
+        }
+        tree->insert(*drone);
+    }
+    return tree;
+}
+
+bool makeRandSeed(const string &inputRand) {
+    istringstream input(inputRand);
+    int seed;
+    if (input >> seed) {
+        srand(seed);
+        return true;
+    }
+    return false;
+}
+
+bool checkDroneType(const char droneType) {
+    if (droneType != 'S' && droneType != 'M' && droneType != 'W' && droneType != 'H') {
+        return false;
+    }
+    return true;
 }

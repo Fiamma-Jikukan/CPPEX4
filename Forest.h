@@ -3,19 +3,18 @@
 #include "Cell.h"
 #include "Drone.h"
 #include "TDVector.h"
-
-
+#include "BinarySearchTree.h"
 
 
 class Forest {
 private:
     Cell **cells;
     unsigned int numOfDrones;
-    Drone *drones;
-
+    BinarySearchTree<Drone> drones;
+    Drone *globalBestDrone;
 
 public:
-    Forest(Drone *drones, unsigned int numOfDrones);
+    Forest(const BinarySearchTree<Drone> &drones, unsigned int numOfDrones, Drone *globalBestDrone);
 
     ~Forest();
 
@@ -25,22 +24,23 @@ public:
 
     Forest(Forest &&other) noexcept;
 
-    Forest & operator=(const Forest &other);
+    Forest &operator=(const Forest &other);
 
-    Forest & operator=(Forest &&other) noexcept;
+    Forest &operator=(Forest &&other) noexcept;
 
     unsigned int operator()(unsigned int x, unsigned int y) const;
 
-    void AddDroneToCell(const TDVector& coordinates) const;
+    void AddDroneToCell(const TDVector &coordinates) const;
 
-    void RemoveDroneFromCell(const TDVector& coordinates) const;
+    void RemoveDroneFromCell(const TDVector &coordinates) const;
 
-    Drone * GetDrones() const;
+    BinarySearchTree<Drone> GetDrones() const;
 
     unsigned int GetNumOfDrones() const;
 
-    Drone GetGlobalBestDrone(unsigned int globalBest) const;
+    Drone *GetGlobalBestDrone() const;
 
+    void SetGlobalBestDrone(Drone *drone);
 };
 
 

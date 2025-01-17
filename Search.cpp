@@ -64,7 +64,6 @@ Search &Search::operator=(Search &&other) noexcept {
 }
 
 void Search::StartSearch() {
-    srand(time(NULL)); // for the random r1 and r2 values in UpdateSpeed
 
     unsigned int num_of_iterations = 0;
     unsigned int num_of_drones = forest.GetNumOfDrones();

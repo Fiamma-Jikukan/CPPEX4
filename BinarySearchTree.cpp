@@ -1,7 +1,12 @@
 #include "BinarySearchTree.h"
+#include "Drone.h"
+
+template class BinarySearchTree<Drone>;
+
 
 template<class T>
-BinarySearchTree<T>::BinarySearchTree(T &rootData): root(new Node<T>(rootData)), size(0) {
+BinarySearchTree<T>::BinarySearchTree(): root(nullptr), size(0) {
+
 }
 
 template<class T>
@@ -165,4 +170,9 @@ void BinarySearchTree<T>::print() {
 template<class T>
 unsigned int BinarySearchTree<T>::GetSize() const {
     return size;
+}
+
+template<class T>
+Node<T> * BinarySearchTree<T>::GetRoot() const {
+    return root;
 }
