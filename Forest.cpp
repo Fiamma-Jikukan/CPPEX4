@@ -1,8 +1,7 @@
 #include "Forest.h"
 
-Forest::Forest(const BinarySearchTree<Drone> &drones, const unsigned int numOfDrones, const TDVector &min,
-               const TDVector &max): numOfDrones(numOfDrones), drones(drones),
-                                     minSize(min), maxSize(max) {
+Forest::Forest(const TDVector &min, const TDVector &max, const BinarySearchTree<Drone> &drones): minSize(min),
+    maxSize(max), drones(drones) {
     const unsigned int x_range = max.GetX() - min.GetX();
     const unsigned int y_range = max.GetY() - min.GetY();
     cells = new Cell *[x_range];
@@ -12,6 +11,7 @@ Forest::Forest(const BinarySearchTree<Drone> &drones, const unsigned int numOfDr
     }
     unsigned int x = min.GetX(), y = min.GetY();
     for (unsigned int i = 0; i < x_range; i++) {
+        unsigned int y = min.GetY();
         for (unsigned int j = 0; j < y_range; j++) {
             cells[i][j].SetX(x);
             cells[i][j].SetY(y);
@@ -21,7 +21,7 @@ Forest::Forest(const BinarySearchTree<Drone> &drones, const unsigned int numOfDr
     }
 }
 
-void Forest::FreeData() const {
+void Forest::FreeData() {
     unsigned int x_range = maxSize.GetX() - minSize.GetX();
     for (unsigned int i = 0; i < x_range; i++) {
         delete[] cells[i];
@@ -33,83 +33,82 @@ Forest::~Forest() {
     FreeData();
 }
 
-// Forest::Forest(const Forest &other)
-//     : cells(new Cell *[FOREST_WIDTH]), numOfDrones(other.numOfDrones), drones(new Drone [numOfDrones]) {
-//     for (unsigned int i = 0; i < FOREST_WIDTH; i++) {
-//         cells[i] = new Cell[FOREST_HEIGHT];
-//         for (unsigned int j = 0; j < FOREST_HEIGHT; j++) {
-//             cells[i][j] = other.cells[i][j];
-//         }
-//     }
-//
-//     for (unsigned int i = 0; i < numOfDrones; i++) {
-//         drones[i] = Drone(other.drones[i].GetId(), other.drones[i].GetPosition(), other.drones[i].GetVelocity() , other.drones[i].GetPersonalBest() );
-//     }
-// }
-//
-// Forest::Forest(Forest &&other) noexcept
-//     : cells(other.cells), numOfDrones(other.numOfDrones), drones(other.drones) {
-//     other.cells = nullptr;
-//     other.numOfDrones = 0;
-//     other.drones = nullptr;
-// }
-//
-// Forest &Forest::operator=(const Forest &other) {
-//     if (this == &other) {
-//         return *this;
-//     }
-//     FreeData();
-//     cells = new Cell *[FOREST_WIDTH];
-//     for (unsigned int i = 0; i < FOREST_WIDTH; i++) {
-//         cells[i] = new Cell[FOREST_HEIGHT];
-//         for (unsigned int j = 0; j < FOREST_HEIGHT; j++) {
-//             cells[i][j] = other.cells[i][j];
-//         }
-//     }
-//     drones = new Drone [other.numOfDrones];
-//     for (unsigned int i = 0; i < other.numOfDrones; i++) {
-//         drones[i] = other.drones[i];
-//     }
-//     numOfDrones = other.numOfDrones;
-//     return *this;
-// }
-//
-// Forest &Forest::operator=(Forest &&other) noexcept {
-//     if (this == &other) {
-//         return *this;
-//     }
-//     FreeData();
-//     cells = other.cells;
-//     numOfDrones = other.numOfDrones;
-//     drones = other.drones;
-//     other.cells = nullptr;
-//     other.numOfDrones = 0;
-//     other.drones = nullptr;
-//     return *this;
-// }
+Forest::Forest(const Forest &other): minSize(other.minSize), maxSize(other.maxSize), drones(other.drones) {
+    const unsigned int x_range = maxSize.GetX() - minSize.GetX();
+    const unsigned int y_range = maxSize.GetY() - minSize.GetY();
+    cells = new Cell *[x_range];
+
+    for (unsigned int i = 0; i < x_range; i++) {
+        cells[i] = new Cell[y_range];
+    }
+    for (unsigned int i = 0; i < x_range; i++) {
+        for (unsigned int j = 0; j < y_range; j++) {
+            cells[i][j] = other.cells[i][j];
+        }
+    }
+
+}
+
+Forest::Forest(Forest &&other) noexcept: minSize(other.minSize), maxSize(other.maxSize), drones(other.drones) {
+    other.cells = nullptr;
+}
+
+Forest & Forest::operator=(const Forest &other) {
+    if (this == &other) {
+        return *this;
+    }
+    FreeData();
+
+    minSize = other.minSize;
+    maxSize = other.maxSize;
+    drones = other.drones;
+
+    const unsigned int x_range = maxSize.GetX() - minSize.GetX();
+    const unsigned int y_range = maxSize.GetY() - minSize.GetY();
+    cells = new Cell*[x_range];
+
+    for (unsigned int i = 0; i < x_range; i++) {
+        cells[i] = new Cell[y_range];
+        for (unsigned int j = 0; j < y_range; j++) {
+            cells[i][j] = other.cells[i][j];
+        }
+    }
+    return *this;
+}
+
+Forest & Forest::operator=(Forest &&other) noexcept {
+    if (this == &other) {
+        return *this;
+    }
+    minSize = other.minSize;
+    maxSize = other.maxSize;
+    drones = other.drones;
+    cells = other.cells;
+    other.cells = nullptr;
+    return *this;
+
+}
+
 
 unsigned int Forest::operator()(const unsigned int x, const unsigned int y) const {
-    return cells[y - minSize.GetY()][x - minSize.GetX()].GetNumOfDrones();
+    unsigned int x_index = x - minSize.GetX(), y_index = y - minSize.GetY();
+    return cells[x_index][y_index].GetNumOfDrones();
 }
 
 void Forest::AddDroneToCell(const TDVector &coordinates) const {
     const unsigned int x = coordinates.GetX() - minSize.GetX();
     const unsigned int y = coordinates.GetY() - minSize.GetY();
-    ++cells[y][x];
+    ++cells[x][y];
 }
 
 void Forest::RemoveDroneFromCell(const TDVector &coordinates) const {
     const unsigned int x = coordinates.GetX() - minSize.GetX();
     const unsigned int y = coordinates.GetY() - minSize.GetY();
-    --cells[y][x];
+    --cells[x][y];
 }
 
 BinarySearchTree<Drone> Forest::GetDrones() const {
     return drones;
-}
-
-unsigned int Forest::GetNumOfDrones() const {
-    return numOfDrones;
 }
 
 TDVector Forest::GetMinSize() const {
@@ -118,4 +117,39 @@ TDVector Forest::GetMinSize() const {
 
 TDVector Forest::GetMaxSize() const {
     return maxSize;
+}
+
+void Forest::PrintTree() const {
+    Node<Drone> *node = drones.GetRoot();
+    node = node->getLeft();
+    PrintNode(node);
+}
+
+void Forest::PrintNode( Node<Drone> *root) const {
+    cout << root->getData() << endl;
+    if (root->getLeft() != nullptr) {
+        PrintNode(root->getLeft());
+    }
+    if (root->getRight() != nullptr) {
+        PrintNode(root->getRight());
+    }
+
+}
+
+std::ostream & operator<<(std::ostream &os, const Forest &forest) {
+    os << "min size: "  << forest.minSize << " max size: " << forest.maxSize << " " << endl << "  ";
+    for (unsigned int j = 0; j < forest.maxSize.GetX(); j++) {
+        os << j << " ";
+    }
+    os << endl;
+    int i = 0;
+    for (unsigned int y = forest.minSize.GetY(); y < forest.maxSize.GetY(); y++) {
+        os << i << " ";
+        for (unsigned int x = forest.minSize.GetX(); x < forest.maxSize.GetX(); x++) {
+            os << forest(x,y) << " ";
+        }
+        i++;
+        os << endl;
+    }
+    return os;
 }

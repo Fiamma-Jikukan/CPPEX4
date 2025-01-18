@@ -8,6 +8,7 @@ SingleRotorDrone::~SingleRotorDrone() = default;
 
 void SingleRotorDrone::UpdateSpeed(const TDVector &globalBest, const TDVector &oldPosition,
                                    const TDVector &oldVelocity) {
+    cout<< "Drone::UpdateSpeed from Single rotor" << endl;
     const double r1 = (((double) rand()) / RAND_MAX);
     const double r2 = (((double) rand()) / RAND_MAX);
     constexpr double alpha = 0.01;

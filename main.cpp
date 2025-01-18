@@ -28,7 +28,9 @@ unsigned int GetNumOfDrones(const string &input2);
 TDVector GetGlobalBest(const string &input2, const TDVector &target);
 
 
-BinarySearchTree<Drone> *GetDroneTree(const string &input2);
+BinarySearchTree<Drone> GetDroneTree(const string &input2);
+
+void PlaceDrones(Forest &forest, Node<Drone> *root);
 
 bool makeRandSeed(const string &inputRand);
 
@@ -37,11 +39,17 @@ bool checkDroneType(char droneType);
 int main(const int argc, char **argv) {
     // validate input
     if (argc != 4 && argc != 5) {
-        cerr << "Error; invalid input" << endl;
+        cerr << "Error; invalid input - args arn't right" << endl;
         return 1;
     }
     const bool validConfig = validateConfig(argv[1]);
-    const bool validInit = validateInit(argv[2]);
+    if (!validConfig) {
+        cerr << "Error; invalid input - config is not right" << endl;
+        return 1;
+    }
+    TDVector max = GetForestMax(argv[1]);
+    TDVector min = GetForestMin(argv[1]);
+    const bool validInit = validateInit(argv[2], min, max);
     const bool validOutput = validateOutput(argv[3]);
     if (argc == 5) {
         const string seedInput = argv[4];
@@ -50,25 +58,29 @@ int main(const int argc, char **argv) {
         }
     }
 
-    if (!validConfig || !validInit || !validOutput) {
-        cerr << "Error; invalid input" << endl;
+    if ( !validInit || !validOutput) {
+        cerr << "Error; invalid input - init is not right or output is not right :(" << endl;
         return 1;
     }
 
     // get data for search
     const TDVector target = GetTarget(argv[1]);
+    cout << target << endl;
     const unsigned int maxIter = GetMaxIter(argv[1]);
-    BinarySearchTree<Drone> *drone_tree = GetDroneTree(argv[2]);
-    const unsigned int numOfDrones = GetNumOfDrones(argv[2]);
-    const TDVector globalBest = GetGlobalBest(argv[2], target);
-    const Forest forest(drone_tree, numOfDrones);
-    for (unsigned int i = 0; i < numOfDrones; i++) {
-        forest.AddDroneToCell(drones[i].GetPosition());
-    }
+    cout << maxIter << endl;
+    BinarySearchTree<Drone> drone_tree = GetDroneTree(argv[2]);
+    drone_tree.print();
+    TDVector globalBest = GetGlobalBest(argv[2], target);
+    cout << globalBest << endl;
+    Forest forest(min, max,drone_tree );
+    Node<Drone> *root = drone_tree.GetRoot();
+    PlaceDrones(forest, root);
+    cout << forest << endl;
     const string output = argv[3];
 
     // build and start search
     Search search(maxIter, forest, globalBest, target, false, output);
+
     search.StartSearch();
 
 
@@ -83,21 +95,25 @@ bool validateConfig(const string &config) {
     }
     // validate forest size
     unsigned int forest_x_min, forest_x_max, forest_y_min, forest_y_max;
-    if (!(config_file >> forest_x_min >> forest_x_max >> forest_y_min >> forest_y_max)) {
+    if (!(config_file >> forest_x_min >> forest_y_min  >> forest_x_max >> forest_y_max)) {
+        cout << "Error - no 4 vals in config" << endl;
         config_file.close();
         return false;
     }
     if ((forest_x_min > forest_x_max) || (forest_y_min > forest_y_max)) {
+        cout << "Error - max and min do not fit" << forest_x_max << forest_x_min<< endl;
         config_file.close();
         return false;
     }
     // validate target
     double target_x, target_y;
     if (!(config_file >> target_x >> target_y)) {
+        cout << "Error - no target vals in second line" << endl;
         config_file.close();
         return false;
     }
     if (target_x < forest_x_min || target_y < forest_y_min || target_x > forest_x_max || target_y > forest_y_max) {
+        cout << "Error - target vals out of range" << endl;
         config_file.close();
         return false;
     }
@@ -109,6 +125,7 @@ bool validateConfig(const string &config) {
     }
     double extra_line;
     if (config_file >> extra_line) {
+        cout << "Error - no iteration line" << endl;
         config_file.close();
         return false;
     }
@@ -233,7 +250,7 @@ TDVector GetGlobalBest(const string &input2, const TDVector &target) {
     ifstream input_target(input2);
     input_target >> num_of_drones;
     double global_best_distance = 0.0;
-    TDVector global_best(0,0);
+    TDVector global_best(0, 0);
     for (unsigned int droneID = 0; droneID < num_of_drones; droneID++) {
         char type_of_drone;
         double pos_x, pos_y, vel_x, vel_y;
@@ -244,16 +261,14 @@ TDVector GetGlobalBest(const string &input2, const TDVector &target) {
             global_best_distance = current_distance;
             global_best = pos;
         }
-
     }
     input_target.close();
     return global_best;
-
 }
 
 
-BinarySearchTree<Drone> *GetDroneTree(const string &input2) {
-    BinarySearchTree<Drone > *tree = new BinarySearchTree<Drone>();
+BinarySearchTree<Drone> GetDroneTree(const string &input2) {
+    BinarySearchTree<Drone> *tree = new BinarySearchTree<Drone>();
     unsigned int num_of_drones;
     ifstream input_target(input2);
     input_target >> num_of_drones;
@@ -265,17 +280,17 @@ BinarySearchTree<Drone> *GetDroneTree(const string &input2) {
         TDVector vel = TDVector(vel_x, vel_y);
         Drone *drone;
         if (type_of_drone == 'S') {
-            new SingleRotorDrone(droneID, pos, vel, pos);
+           drone = new SingleRotorDrone(droneID, pos, vel, pos);
         } else if (type_of_drone == 'M') {
-            new MultiRotorDrone(droneID, pos, vel, pos);
+            drone = new MultiRotorDrone(droneID, pos, vel, pos);
         } else if (type_of_drone == 'W') {
-            new FixedWingDrone(droneID, pos, vel, pos);
+           drone = new FixedWingDrone(droneID, pos, vel, pos);
         } else if (type_of_drone == 'H') {
-            new FixedWingHybridVTOL(droneID, pos, vel, pos);
+           drone = new FixedWingHybridVTOL(droneID, pos, vel, pos);
         }
         tree->insert(*drone);
     }
-    return tree;
+    return *tree;
 }
 
 bool makeRandSeed(const string &inputRand) {
@@ -293,4 +308,15 @@ bool checkDroneType(const char droneType) {
         return false;
     }
     return true;
+}
+
+void PlaceDrones(Forest &forest, Node<Drone> *root) {
+    TDVector cell_coordinate = root->getData().GetPosition();
+    forest.AddDroneToCell(cell_coordinate);
+    if (root->getLeft() != nullptr) {
+        PlaceDrones(forest, root->getLeft());
+    }
+    if (root->getRight() != nullptr) {
+        PlaceDrones(forest, root->getRight());
+    }
 }

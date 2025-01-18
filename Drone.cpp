@@ -79,7 +79,7 @@ Cell Drone::GetCurrentCell() const {
 
 
 void Drone::MoveDrone(const TDVector &globalBest, const TDVector &forestMin, const TDVector &forestMax) {
-    cout << *this;
+    // cout << *this;
 
     const TDVector old_position = position;
     const TDVector old_velocity = velocity;
@@ -108,14 +108,15 @@ void Drone::MoveDrone(const TDVector &globalBest, const TDVector &forestMin, con
 }
 
 void Drone::UpdateSpeed(const TDVector &globalBest, const TDVector &oldPosition, const TDVector &oldVelocity) {
-    const double r1 = (((double) rand()) / RAND_MAX);
-    const double r2 = (((double) rand()) / RAND_MAX);
-
-    const TDVector personal = GetPersonalBest();
-
-    const TDVector new_speed = (0.25 * oldVelocity) + (r1 * (personal - oldPosition)) + (
-                                   r2 * (globalBest - oldPosition));
-    SetVelocity(new_speed);
+    // cout<< "Drone::UpdateSpeed" << endl;
+    // const double r1 = (((double) rand()) / RAND_MAX);
+    // const double r2 = (((double) rand()) / RAND_MAX);
+    //
+    // const TDVector personal = GetPersonalBest();
+    //
+    // const TDVector new_speed = (0.25 * oldVelocity) + (r1 * (personal - oldPosition)) + (
+    //                                r2 * (globalBest - oldPosition));
+    // SetVelocity(new_speed);
 }
 
 bool Drone::operator<(const Drone &other) const {

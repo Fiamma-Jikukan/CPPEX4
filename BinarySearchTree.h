@@ -18,10 +18,7 @@ public:
     explicit Node(T data): data(data), left(nullptr), right(nullptr), parent(nullptr) {
     }
 
-    ~Node() {
-        delete left;
-        delete right;
-    }
+    ~Node() = default;
 
     T getData() {
         return data;
@@ -75,6 +72,14 @@ public:
     explicit BinarySearchTree();
 
     ~BinarySearchTree();
+
+    void ClearTree(Node<T>* node);
+
+    void clear();
+
+
+    BinarySearchTree(const BinarySearchTree&) = default;
+    BinarySearchTree& operator=(const BinarySearchTree&) = default;
 
     void insert(T &data);
 

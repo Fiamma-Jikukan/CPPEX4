@@ -11,7 +11,34 @@ BinarySearchTree<T>::BinarySearchTree(): root(nullptr), size(0) {
 
 template<class T>
 BinarySearchTree<T>::~BinarySearchTree() {
-    delete root;
+    // Clean up all nodes in the tree
+    clear();
+}
+
+//
+// Post-order traversal to delete entire subtree
+//
+template<class T>
+void BinarySearchTree<T>::ClearTree(Node<T>* node) {
+    if (node == nullptr) return;
+
+    // Recursively delete left and right children
+    ClearTree(node->getLeft());
+    ClearTree(node->getRight());
+
+    // Now it is safe to delete this node
+    delete node;
+}
+
+//
+// Clear the entire BST
+//
+template<class T>
+void BinarySearchTree<T>::clear() {
+    // Delete everything under root
+    ClearTree(root);
+    root = nullptr;
+    size = 0;
 }
 
 template<class T>
@@ -22,23 +49,23 @@ void BinarySearchTree<T>::insert(T &data) {
         return;
     }
     Node<T> *curr = root;
-    while (curr->left != nullptr || curr->right != nullptr) {
-        if (curr->data > data) {
-            curr = curr->left;
+    while (curr->getLeft() != nullptr || curr->getRight() != nullptr) {
+        if (curr->getData() > data) {
+            curr = curr->getLeft();
         }
-        if (curr->data < data) {
-            curr = curr->right;
+        if (curr->getData() < data) {
+            curr = curr->getRight();
         }
-        if (curr->data == data) {
+        if (curr->getData() == data) {
             return;
         }
     }
-    if (curr->data > data) {
-        curr->left = new Node<T>(data);
-        curr->left->parent = curr;
+    if (curr->getData() > data) {
+        curr->setLeft(new Node<T>(data));
+        curr->getLeft()->setParent(curr);
     } else {
-        curr->right = new Node<T>(data);
-        curr->right->parent = curr;
+        curr->setRight(new Node<T>(data))  ;
+        curr->getRight()->setParent(curr);
     }
     size++;
 }
@@ -48,15 +75,15 @@ Node<T> *BinarySearchTree<T>::search(T &data) {
     if (root == nullptr) {
         return nullptr;
     }
-    Node<T> curr = root;
-    while (curr->left != nullptr && curr->right != nullptr) {
-        if (curr->data > data) {
-            curr = curr->left;
+    Node<T> *curr = root;
+    while (curr->getLeft() != nullptr && curr->getRight() != nullptr) {
+        if (curr->getData() > data) {
+            curr = curr->getLeft();
         }
-        if (curr->data < data) {
-            curr = curr->right;
+        if (curr->getData() < data) {
+            curr = curr->getRight();
         }
-        if (curr->data == data) {
+        if (curr->getData() == data) {
             return curr;
         }
     }
@@ -68,9 +95,9 @@ Node<T> *BinarySearchTree<T>::min() {
     if (root == nullptr) {
         return nullptr;
     }
-    Node<T> curr = root;
-    while (curr->left != nullptr) {
-        curr = curr->left;
+    Node<T> *curr = root;
+    while (curr->getLeft() != nullptr) {
+        curr = curr->getLeft();
     }
     return curr;
 }
@@ -80,9 +107,9 @@ Node<T> *BinarySearchTree<T>::max() {
     if (root == nullptr) {
         return nullptr;
     }
-    Node<T> curr = root;
-    while (curr->right != nullptr) {
-        curr = curr->right;
+    Node<T> *curr = root;
+    while (curr->getRight() != nullptr) {
+        curr = curr->getRight();
     }
     return curr;
 }
@@ -92,18 +119,18 @@ void BinarySearchTree<T>::remove(T &data) {
     if (root == nullptr) {
         return;
     }
-    Node<T> curr = root;
+    Node<T> *curr = root;
     while (curr != nullptr) {
-        if (curr->data == data) {
+        if (curr->getData() == data) {
             removeHelper(curr);
             size--;
             return;
         }
-        if (data < curr->data) {
-            curr = curr->left;
+        if (data < curr->getData()) {
+            curr = curr->getLeft();
         }
-        if (data > curr->data) {
-            curr = curr->right;
+        if (data > curr->getData()) {
+            curr = curr->getRight();
         }
     }
 }
@@ -111,44 +138,44 @@ void BinarySearchTree<T>::remove(T &data) {
 template<class T>
 void BinarySearchTree<T>::removeHelper(Node<T> *node) {
     // leaf case
-    if (node->left == nullptr && node->right == nullptr) {
+    if (node->getLeft() == nullptr && node->getRight() == nullptr) {
         delete node;
     }
     // node has 1 child case
-    else if (node->left != nullptr && node->right == nullptr) {
-        if (node->parent == nullptr) {
-            root = node->left;
-            root->parent = nullptr;
-            node->left = nullptr;
+    else if (node->getLeft() != nullptr && node->getRight() == nullptr) {
+        if (node->getParent() == nullptr) {
+            root = node->getLeft();
+            root->setParent(nullptr) ;
+            node->setLeft(nullptr);
             delete node;
         } else {
-            node->parent->left = node->left;
-            node->left->parent = node->parent;
-            node->left = nullptr;
-            node->parent = nullptr;
+            node->getParent()->setLeft(node->getLeft());
+            node->getLeft()->setParent(node->getParent());
+            node->setLeft(nullptr);
+            node->setParent(nullptr) ;
             delete node;
         }
-    } else if (node->right != nullptr && node->left == nullptr) {
-        if (node->parent == nullptr) {
-            root = node->right;
-            root->parent = nullptr;
-            node->right = nullptr;
+    } else if (node->getRight() != nullptr && node->getLeft() == nullptr) {
+        if (node->getParent() == nullptr) {
+            root = node->getRight();
+            root->setParent(nullptr);
+            node->setRight(nullptr);
             delete node;
         } else {
-            node->parent->right = node->right;
-            node->right->parent = node->parent;
-            node->right = nullptr;
-            node->parent = nullptr;
+            node->getParent()->setRight(node->getRight());
+            node->getRight()->setParent(node->getParent());
+            node->setRight(nullptr);
+            node->setParent(nullptr);
             delete node;
         }
     }
     // node has 2 children case
-    else if (node->left != nullptr && node->right != nullptr) {
-        Node<T> *successor = node->right;
-        while (successor->left != nullptr) {
-            successor = successor->left;
+    else if (node->getLeft() != nullptr && node->getRight() != nullptr) {
+        Node<T> *successor = node->getRight();
+        while (successor->getLeft() != nullptr) {
+            successor = successor->getLeft();
         }
-        node->data = successor->data;
+        node->getData() = successor->getData();
         removeHelper(successor);
     }
 }
@@ -164,7 +191,7 @@ void BinarySearchTree<T>::print() {
     if (root == nullptr) {
         return;
     }
-    root->print();
+    root->printNode(root);
 }
 
 template<class T>

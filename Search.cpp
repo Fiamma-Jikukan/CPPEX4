@@ -1,8 +1,8 @@
 #include "Search.h"
 
 
-Search::Search(unsigned int max_num_of_iter, const Forest &forest,
-               TDVector global_best, const TDVector &target, bool ended,
+Search::Search(unsigned int max_num_of_iter,  Forest &forest,
+               TDVector &global_best, const TDVector &target, bool ended,
                const string &outputFileName): maxNumOfIter(max_num_of_iter),
                                               forest(forest),
                                               globalBest(global_best),
@@ -11,60 +11,57 @@ Search::Search(unsigned int max_num_of_iter, const Forest &forest,
                                               outputFileName(outputFileName) {
 }
 
+
+Search::~Search() = default;
+
+Search::Search(const Search &other) : maxNumOfIter(other.maxNumOfIter),
+                                      forest(other.forest),
+                                      globalBest(other.globalBest),
+                                      target(other.target),
+                                      ended(other.ended),
+                                      outputFileName(other.outputFileName) {
+}
+
+Search::Search(Search &&other) noexcept : maxNumOfIter(other.maxNumOfIter),
+                                          forest(move(other.forest)),
+                                          globalBest(other.globalBest),
+                                          target(move(other.target)),
+                                          ended(other.ended),
+                                          outputFileName(move(other.outputFileName)) {
+    other.maxNumOfIter = 0;
+    other.ended = false;
+}
 //
-// Search::~Search() = default;
 //
-// Search::Search(const Search &other) : maxNumOfIter(other.maxNumOfIter),
-//                                       forest(other.forest),
-//                                       globalBest(other.globalBest),
-//                                       target(other.target),
-//                                       ended(other.ended),
-//                                       outputFileName(other.outputFileName) {
-// }
+Search &Search::operator=(const Search &other) {
+    if (this == &other)
+        return *this;
+    maxNumOfIter = other.maxNumOfIter;
+    forest = other.forest;
+    globalBest = other.globalBest;
+    target = other.target;
+    ended = other.ended;
+    outputFileName = other.outputFileName;
+    return *this;
+}
 //
-// Search::Search(Search &&other) noexcept : maxNumOfIter(other.maxNumOfIter),
-//                                           forest(move(other.forest)),
-//                                           globalBest(other.globalBest),
-//                                           target(move(other.target)),
-//                                           ended(other.ended),
-//                                           outputFileName(move(other.outputFileName)) {
-//     other.maxNumOfIter = 0;
-//     other.ended = false;
-//     other.globalBest = 0;
-// }
-//
-//
-// Search &Search::operator=(const Search &other) {
-//     if (this == &other)
-//         return *this;
-//     maxNumOfIter = other.maxNumOfIter;
-//     forest = other.forest;
-//     globalBest = other.globalBest;
-//     target = other.target;
-//     ended = other.ended;
-//     outputFileName = other.outputFileName;
-//     return *this;
-// }
-//
-// Search &Search::operator=(Search &&other) noexcept {
-//     if (this == &other)
-//         return *this;
-//     maxNumOfIter = other.maxNumOfIter;
-//     forest = move(other.forest);
-//     globalBest = other.globalBest;
-//     target = move(other.target);
-//     ended = other.ended;
-//     outputFileName = move(other.outputFileName);
-//     other.maxNumOfIter = 0;
-//     other.ended = false;
-//     other.globalBest = 0;
-//
-//     return *this;
-// }
+Search &Search::operator=(Search &&other) noexcept {
+    if (this == &other)
+        return *this;
+    maxNumOfIter = other.maxNumOfIter;
+    forest = move(other.forest);
+    globalBest = other.globalBest;
+    target = move(other.target);
+    ended = other.ended;
+    outputFileName = move(other.outputFileName);
+    other.maxNumOfIter = 0;
+    other.ended = false;
+
+    return *this;
+}
 
 void Search::StartSearch() {
     unsigned int num_of_iterations = 0;
-    const unsigned int num_of_drones = forest.GetNumOfDrones();
     const BinarySearchTree<Drone> drones = forest.GetDrones();
     TDVector forest_max = forest.GetMaxSize();
     TDVector forest_min = forest.GetMinSize();
@@ -117,14 +114,36 @@ void Search::AdvanceDrones(Node<Drone> *root, TDVector &max, TDVector &min) {
 void Search::EndSearch(const unsigned int numOfIterations) const {
     ofstream outfile(outputFileName);
     outfile << numOfIterations << "\n";
-    unsigned int num_of_drones = forest.GetNumOfDrones();
-    Drone *drones = forest.GetDrones();
-    for (unsigned int i = 0; i < num_of_drones; i++) {
-        outfile << FormatNumber(drones[i].GetPosition().GetX()) << " " << FormatNumber(drones[i].GetPosition().GetY())
-                << "\n";
-    }
+    EndSearchHelper(outfile, forest.GetDrones().GetRoot());
     outfile.close();
 }
+
+void Search::EndSearchHelper(ofstream &output, Node<Drone> *node) const {
+    Drone drone = node->getData();
+    string drone_type = "bugalu";
+    cout << typeid(drone).name();
+    // if (typeid(drone).name() == "SingleRotorDrone") {
+    //     drone_type = 'S';
+    // } else if (typeid(drone).name() == "MultiRotorDrone") {
+    //     drone_type = 'M';
+    // } else if (typeid(drone).name() == "FixedWingDrone") {
+    //     drone_type = 'W';
+    // } else {
+    //
+    //     drone_type = 'H';
+    // }
+    output << drone_type << " ";
+    output << drone.GetPosition().GetX() << " " << drone.GetPosition().GetY() << " ";
+    output << "\n";
+    if (node->getLeft() != nullptr) {
+        EndSearchHelper(output, node->getLeft());
+    }
+    if (node->getRight() != nullptr) {
+        EndSearchHelper(output, node->getRight());
+    }
+}
+
+
 //
 // void Search::UpdateDrone(Drone &drone, const unsigned int index) {
 //     // get drone data before the move
@@ -165,11 +184,10 @@ void Search::EndSearch(const unsigned int numOfIterations) const {
 // }
 
 
-
-
 TDVector Search::GetTarget() {
     return target;
 }
+
 //
 // void Search::UpdateGlobalBest(const unsigned int newGlobalBest) {
 //     globalBest = newGlobalBest;

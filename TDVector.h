@@ -45,6 +45,7 @@ public:
 
     friend ostream &operator<<(ostream &os, const TDVector &vec) {
         os << "( " << vec.GetX() << " , " << vec.GetY() << " )";
+        return os;
     }
 };
 

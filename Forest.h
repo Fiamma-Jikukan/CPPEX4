@@ -8,18 +8,18 @@
 
 class Forest {
 private:
+    TDVector minSize;
+    TDVector maxSize;
     Cell **cells;
-    unsigned int numOfDrones;
     BinarySearchTree<Drone> drones;
-    TDVector<TDVector> minSize;
-    TDVector<TDVector> maxSize;
+
 
 public:
-    Forest(const BinarySearchTree<Drone> &drones, unsigned int numOfDrones, const TDVector &min, const TDVector &max);
+    Forest( const TDVector &min, const TDVector &max, const BinarySearchTree<Drone> &drones);
 
     ~Forest();
 
-    void FreeData() const;
+    void FreeData() ;
 
     Forest(const Forest &other);
 
@@ -37,11 +37,14 @@ public:
 
     BinarySearchTree<Drone> GetDrones() const;
 
-    unsigned int GetNumOfDrones() const;
+    TDVector GetMinSize() const;
 
-    TDVector<TDVector> GetMinSize() const;
+    TDVector GetMaxSize() const;
 
-    TDVector<TDVector> GetMaxSize() const;
+    void PrintTree() const;
+    void PrintNode( Node<Drone> * root) const;
+
+    friend std::ostream &operator<<(std::ostream &os, const Forest &forest);
 };
 
 

@@ -16,8 +16,8 @@ private:
     string outputFileName;
 
 public:
-    Search(unsigned int max_num_of_iter, const Forest &forest,
-           TDVector global_best, const TDVector &target, bool ended, const string &outputFileName);
+    Search(unsigned int max_num_of_iter, Forest &forest,
+           TDVector &global_best, const TDVector &target, bool ended, const string &outputFileName);
 
 
     ~Search();
@@ -35,6 +35,8 @@ public:
     void AdvanceDrones(Node<Drone> *root, TDVector &max, TDVector &min);
 
     void EndSearch(unsigned int numOfIterations) const;
+
+    void EndSearchHelper(ofstream &output, Node<Drone> *node) const;
 
     void UpdateDrone(Drone &drone, unsigned int index);
 
