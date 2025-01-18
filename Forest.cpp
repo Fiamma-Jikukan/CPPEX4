@@ -1,19 +1,29 @@
 #include "Forest.h"
 
-Forest::Forest(const BinarySearchTree<Drone> &drones, const unsigned int numOfDrones, Drone *globalBestDrone): cells(new Cell *[FOREST_WIDTH]), numOfDrones(numOfDrones), drones(drones), globalBestDrone(globalBestDrone) {
-    for (unsigned int i = 0; i < FOREST_WIDTH; i++) {
-        cells[i] = new Cell[FOREST_HEIGHT];
+Forest::Forest(const BinarySearchTree<Drone> &drones, const unsigned int numOfDrones, const TDVector &min,
+               const TDVector &max): numOfDrones(numOfDrones), drones(drones),
+                                     minSize(min), maxSize(max) {
+    const unsigned int x_range = max.GetX() - min.GetX();
+    const unsigned int y_range = max.GetY() - min.GetY();
+    cells = new Cell *[x_range];
+
+    for (unsigned int i = 0; i < x_range; i++) {
+        cells[i] = new Cell[y_range];
     }
-    for (unsigned int i = 0; i < FOREST_WIDTH; i++) {
-        for (unsigned int j = 0; j < FOREST_HEIGHT; j++) {
-            cells[i][j].SetX(i);
-            cells[i][j].SetY(j);
+    unsigned int x = min.GetX(), y = min.GetY();
+    for (unsigned int i = 0; i < x_range; i++) {
+        for (unsigned int j = 0; j < y_range; j++) {
+            cells[i][j].SetX(x);
+            cells[i][j].SetY(y);
+            y++;
         }
+        x++;
     }
 }
 
 void Forest::FreeData() const {
-    for (unsigned int i = 0; i < FOREST_WIDTH; i++) {
+    unsigned int x_range = maxSize.GetX() - minSize.GetX();
+    for (unsigned int i = 0; i < x_range; i++) {
         delete[] cells[i];
     }
     delete[] cells;
@@ -79,18 +89,18 @@ Forest::~Forest() {
 // }
 
 unsigned int Forest::operator()(const unsigned int x, const unsigned int y) const {
-    return cells[y][x].GetNumOfDrones();
+    return cells[y - minSize.GetY()][x - minSize.GetX()].GetNumOfDrones();
 }
 
-void Forest::AddDroneToCell(const TDVector& coordinates) const {
-    const unsigned int x = coordinates.GetX();
-    const unsigned int y = coordinates.GetY();
+void Forest::AddDroneToCell(const TDVector &coordinates) const {
+    const unsigned int x = coordinates.GetX() - minSize.GetX();
+    const unsigned int y = coordinates.GetY() - minSize.GetY();
     ++cells[y][x];
 }
 
 void Forest::RemoveDroneFromCell(const TDVector &coordinates) const {
-    const unsigned int x = coordinates.GetX();
-    const unsigned int y = coordinates.GetY();
+    const unsigned int x = coordinates.GetX() - minSize.GetX();
+    const unsigned int y = coordinates.GetY() - minSize.GetY();
     --cells[y][x];
 }
 
@@ -102,10 +112,10 @@ unsigned int Forest::GetNumOfDrones() const {
     return numOfDrones;
 }
 
-Drone* Forest::GetGlobalBestDrone() const {
-    return globalBestDrone;
+TDVector Forest::GetMinSize() const {
+    return minSize;
 }
 
-void Forest::SetGlobalBestDrone(Drone* drone) {
-    globalBestDrone = drone;
+TDVector Forest::GetMaxSize() const {
+    return maxSize;
 }

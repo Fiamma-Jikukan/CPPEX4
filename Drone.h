@@ -47,7 +47,7 @@ public:
 
     Cell GetCurrentCell() const;
 
-    void MoveDrone(const TDVector &globalBest);
+    void MoveDrone(const TDVector &globalBest, const TDVector &forestMin, const TDVector &forestMax);
 
     virtual void UpdateSpeed(const TDVector &globalBest, const TDVector &oldPosition, const TDVector &oldVelocity);
 

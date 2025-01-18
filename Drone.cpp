@@ -78,7 +78,7 @@ Cell Drone::GetCurrentCell() const {
 }
 
 
-void Drone::MoveDrone(const TDVector &globalBest) {
+void Drone::MoveDrone(const TDVector &globalBest, const TDVector &forestMin, const TDVector &forestMax) {
     cout << *this;
 
     const TDVector old_position = position;
@@ -88,28 +88,26 @@ void Drone::MoveDrone(const TDVector &globalBest) {
     double new_x = new_position.GetX();
     double new_y = new_position.GetY();
 
-    UpdateSpeed(globalBest,old_position, old_velocity );
+    UpdateSpeed(globalBest, old_position, old_velocity);
 
 
     // make sure the new position is within the limits of the forest:
-    if (new_x > FOREST_WIDTH) {
-        new_x = FOREST_WIDTH;
-    } else if (new_x < 0) {
-        new_x = 0;
+    if (new_x > forestMax.GetX()) {
+        new_x = forestMax.GetX();
+    } else if (new_x < forestMin.GetX()) {
+        new_x = forestMin.GetX();
     }
     position.SetX(new_x);
 
-    if (new_y > FOREST_HEIGHT) {
-        new_y = FOREST_HEIGHT;
-    } else if (new_y < 0) {
-        new_y = 0;
+    if (new_y > forestMax.GetY()) {
+        new_y = forestMax.GetY();
+    } else if (new_y < forestMin.GetY()) {
+        new_y = forestMin.GetY();
     }
     position.SetY(new_y);
-
-
 }
 
-void Drone::UpdateSpeed(const TDVector &globalBest,const TDVector &oldPosition, const TDVector &oldVelocity ) {
+void Drone::UpdateSpeed(const TDVector &globalBest, const TDVector &oldPosition, const TDVector &oldVelocity) {
     const double r1 = (((double) rand()) / RAND_MAX);
     const double r2 = (((double) rand()) / RAND_MAX);
 
@@ -140,5 +138,3 @@ double Drone::GetDistanceFromTarget(const TDVector &target) const {
     return position * target;
     // in TDVector, the * operator is defined to calculate the distance between two sets of coordinates
 }
-
-

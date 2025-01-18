@@ -10,14 +10,14 @@ class Search {
 private:
     unsigned int maxNumOfIter;
     Forest forest;
-    unsigned int globalBest; // the index of the drone that is closest to the target
+    TDVector globalBest; // the possition of the drone that is closest to the target
     TDVector target;
     bool ended; // indicates if the target was reached
     string outputFileName;
 
 public:
     Search(unsigned int max_num_of_iter, const Forest &forest,
-           unsigned int global_best, const TDVector &target, bool ended, const string &outputFileName);
+           TDVector global_best, const TDVector &target, bool ended, const string &outputFileName);
 
 
     ~Search();
@@ -31,6 +31,8 @@ public:
     Search &operator=(Search &&other) noexcept;
 
     void StartSearch();
+
+    void AdvanceDrones(Node<Drone> *root, TDVector &max, TDVector &min);
 
     void EndSearch(unsigned int numOfIterations) const;
 

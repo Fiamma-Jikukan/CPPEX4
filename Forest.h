@@ -11,10 +11,11 @@ private:
     Cell **cells;
     unsigned int numOfDrones;
     BinarySearchTree<Drone> drones;
-    Drone *globalBestDrone;
+    TDVector<TDVector> minSize;
+    TDVector<TDVector> maxSize;
 
 public:
-    Forest(const BinarySearchTree<Drone> &drones, unsigned int numOfDrones, Drone *globalBestDrone);
+    Forest(const BinarySearchTree<Drone> &drones, unsigned int numOfDrones, const TDVector &min, const TDVector &max);
 
     ~Forest();
 
@@ -38,9 +39,9 @@ public:
 
     unsigned int GetNumOfDrones() const;
 
-    Drone *GetGlobalBestDrone() const;
+    TDVector<TDVector> GetMinSize() const;
 
-    void SetGlobalBestDrone(Drone *drone);
+    TDVector<TDVector> GetMaxSize() const;
 };
 
 
