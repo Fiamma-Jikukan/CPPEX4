@@ -108,15 +108,14 @@ void Drone::MoveDrone(const TDVector &globalBest, const TDVector &forestMin, con
 }
 
 void Drone::UpdateSpeed(const TDVector &globalBest, const TDVector &oldPosition, const TDVector &oldVelocity) {
-    // cout<< "Drone::UpdateSpeed" << endl;
-    // const double r1 = (((double) rand()) / RAND_MAX);
-    // const double r2 = (((double) rand()) / RAND_MAX);
-    //
-    // const TDVector personal = GetPersonalBest();
-    //
-    // const TDVector new_speed = (0.25 * oldVelocity) + (r1 * (personal - oldPosition)) + (
-    //                                r2 * (globalBest - oldPosition));
-    // SetVelocity(new_speed);
+    const double r1 = (((double) rand()) / RAND_MAX);
+    const double r2 = (((double) rand()) / RAND_MAX);
+
+    const TDVector personal = GetPersonalBest();
+
+    const TDVector new_speed = (0.25 * oldVelocity) + (r1 * (personal - oldPosition)) + (
+                                   r2 * (globalBest - oldPosition));
+    SetVelocity(new_speed);
 }
 
 bool Drone::operator<(const Drone &other) const {

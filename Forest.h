@@ -4,6 +4,8 @@
 #include "Drone.h"
 #include "TDVector.h"
 #include "BinarySearchTree.h"
+#include <fstream>
+
 
 
 class Forest {
@@ -12,10 +14,16 @@ private:
     TDVector maxSize;
     Cell **cells;
     BinarySearchTree<Drone> drones;
+    unsigned int maxNumOfIter;
+    TDVector globalBest; // the possition of the drone that is closest to the target
+    TDVector target;
+    bool ended; // indicates if the target was reached
+    string outputFileName;
 
 
 public:
-    Forest( const TDVector &min, const TDVector &max, const BinarySearchTree<Drone> &drones);
+    Forest( const TDVector &min, const TDVector &max, const BinarySearchTree<Drone> &drones, unsigned int max_num_of_iter,
+           TDVector &global_best, const TDVector &target, bool ended, const string &outputFileName);
 
     ~Forest();
 
@@ -43,6 +51,18 @@ public:
 
     void PrintTree() const;
     void PrintNode( Node<Drone> * root) const;
+
+    void StartSearch();
+
+    void AdvanceDrones(Node<Drone> *root);
+
+    void EndSearch(unsigned int numOfIterations) const;
+
+    void EndSearchHelper(ofstream &output, Node<Drone> *node) const;
+
+    Cell GetTargetCell() const;
+
+    static double FormatNumber(double number);
 
     friend std::ostream &operator<<(std::ostream &os, const Forest &forest);
 };

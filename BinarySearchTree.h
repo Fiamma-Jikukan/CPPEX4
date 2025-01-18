@@ -20,7 +20,11 @@ public:
 
     ~Node() = default;
 
-    T getData() {
+    T& getData() {
+        return data;
+    }
+
+    const T& getData() const {
         return data;
     }
 
@@ -57,7 +61,7 @@ public:
             return;
         }
         printNode(node->left);
-        cout << node->getData() << " ";
+        cout << node->getData();
         printNode(node->right);
     }
 };
@@ -78,10 +82,16 @@ public:
     void clear();
 
 
-    BinarySearchTree(const BinarySearchTree&) = default;
-    BinarySearchTree& operator=(const BinarySearchTree&) = default;
+
+    // BinarySearchTree(const BinarySearchTree&) = default;
+    // BinarySearchTree& operator=(const BinarySearchTree&) = default;
 
     void insert(T &data);
+
+    BinarySearchTree(const BinarySearchTree &other);
+
+    Node<T>* copySubtree(Node<T>* otherNode, Node<T>* parent);
+
 
     Node<T> * search(T &data);
 

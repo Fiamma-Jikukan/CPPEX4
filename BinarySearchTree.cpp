@@ -11,13 +11,10 @@ BinarySearchTree<T>::BinarySearchTree(): root(nullptr), size(0) {
 
 template<class T>
 BinarySearchTree<T>::~BinarySearchTree() {
-    // Clean up all nodes in the tree
     clear();
 }
 
-//
-// Post-order traversal to delete entire subtree
-//
+
 template<class T>
 void BinarySearchTree<T>::ClearTree(Node<T>* node) {
     if (node == nullptr) return;
@@ -39,6 +36,25 @@ void BinarySearchTree<T>::clear() {
     ClearTree(root);
     root = nullptr;
     size = 0;
+}
+
+template <class T>
+BinarySearchTree<T>::BinarySearchTree(const BinarySearchTree<T> &other)
+    : root(nullptr), size(0)
+{
+    // Recursively copy the entire tree
+    root = copySubtree(other.root, nullptr);
+    size = other.size;
+}
+
+template <class T>
+Node<T>* BinarySearchTree<T>::copySubtree(Node<T>* otherNode, Node<T>* parent) {
+    if (!otherNode) return nullptr;
+    Node<T>* newNode = new Node<T>(otherNode->getData());
+    newNode->setParent(parent);
+    newNode->setLeft(copySubtree(otherNode->getLeft(), newNode));
+    newNode->setRight(copySubtree(otherNode->getRight(), newNode));
+    return newNode;
 }
 
 template<class T>

@@ -63,7 +63,7 @@ public:
 
     friend ostream &operator<<(ostream &os, const Drone &drone) {
         os << "Drone ID: " << drone.GetId() << " currently at position: " << drone.GetPosition() << " at velocity: " <<
-                drone.GetVelocity() << endl;
+                drone.GetVelocity() << " and personal best: " << drone.GetPersonalBest() << endl;
         return os;
     }
 };

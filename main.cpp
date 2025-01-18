@@ -72,16 +72,19 @@ int main(const int argc, char **argv) {
     drone_tree.print();
     TDVector globalBest = GetGlobalBest(argv[2], target);
     cout << globalBest << endl;
-    Forest forest(min, max,drone_tree );
+    const string output = argv[3];
+
+    Forest forest(min, max,drone_tree, maxIter, globalBest, target, false, output );
     Node<Drone> *root = drone_tree.GetRoot();
     PlaceDrones(forest, root);
     cout << forest << endl;
-    const string output = argv[3];
 
     // build and start search
-    Search search(maxIter, forest, globalBest, target, false, output);
-
-    search.StartSearch();
+    // Search search(maxIter, forest, globalBest, target, false, output);
+    //
+    // search.StartSearch();
+    forest.StartSearch();
+    cout << forest << endl;
 
 
     return 0;

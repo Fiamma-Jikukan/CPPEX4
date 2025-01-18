@@ -122,16 +122,16 @@ void Search::EndSearchHelper(ofstream &output, Node<Drone> *node) const {
     Drone drone = node->getData();
     string drone_type = "bugalu";
     cout << typeid(drone).name();
-    // if (typeid(drone).name() == "SingleRotorDrone") {
-    //     drone_type = 'S';
-    // } else if (typeid(drone).name() == "MultiRotorDrone") {
-    //     drone_type = 'M';
-    // } else if (typeid(drone).name() == "FixedWingDrone") {
-    //     drone_type = 'W';
-    // } else {
-    //
-    //     drone_type = 'H';
-    // }
+    if (typeid(drone).name() == "SingleRotorDrone") {
+        drone_type = 'S';
+    } else if (typeid(drone).name() == "MultiRotorDrone") {
+        drone_type = 'M';
+    } else if (typeid(drone).name() == "FixedWingDrone") {
+        drone_type = 'W';
+    } else {
+
+        drone_type = 'H';
+    }
     output << drone_type << " ";
     output << drone.GetPosition().GetX() << " " << drone.GetPosition().GetY() << " ";
     output << "\n";
