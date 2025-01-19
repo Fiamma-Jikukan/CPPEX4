@@ -1,4 +1,4 @@
 C:\Users\User\AppData\Local\JetBrains\CLion2024.3\cygwin_cmake\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/cygdrive/c/Users/User/AppData/Local/Programs/CLion/bin/ninja/cygwin/x64/ninja.exe -G Ninja -S /cygdrive/c/Users/User/CLionProjects/CPPEX4 -B /cygdrive/c/Users/User/CLionProjects/CPPEX4/cmake-build-debug
--- Configuring done (0.1s)
+-- Configuring done (0.3s)
 -- Generating done (0.1s)
 -- Build files have been written to: /cygdrive/c/Users/User/CLionProjects/CPPEX4/cmake-build-debug

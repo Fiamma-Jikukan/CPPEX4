@@ -10,8 +10,6 @@ add_executable(CPPEX4 main.cpp
         Forest.h
         Drone.cpp
         Drone.h
-        Search.cpp
-        Search.h
         TDVector.cpp
         TDVector.h
         BinarySearchTree.cpp

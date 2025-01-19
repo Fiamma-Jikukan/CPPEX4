@@ -1,7 +1,7 @@
 #include "BinarySearchTree.h"
 #include "Drone.h"
 
-template class BinarySearchTree<Drone>;
+template class BinarySearchTree<Drone*>;
 
 
 template<class T>

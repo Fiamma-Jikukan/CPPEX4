@@ -1,13 +1,13 @@
 #include "Forest.h"
 
-Forest::Forest(const TDVector &min, const TDVector &max, const BinarySearchTree<Drone> &drones,
+
+Forest::Forest(const TDVector &min, const TDVector &max, const BinarySearchTree<Drone*> &drones,
                unsigned int max_num_of_iter,
-               TDVector &global_best, const TDVector &target, bool ended, const string &outputFileName): minSize(min),
-    maxSize(max), drones(drones), maxNumOfIter(max_num_of_iter), globalBest(global_best), target(target), ended(ended),
-    outputFileName(outputFileName) {
+               const TDVector &global_best, const TDVector &target, bool ended, const string &outputFileName): minSize(min),
+                                                                                                         maxSize(max), drones(drones), maxNumOfIter(max_num_of_iter), globalBest(global_best), target(target), ended(ended),
+                                                                                                         outputFileName(outputFileName) {
     const unsigned int x_range = max.GetX() - min.GetX() + 1;
     const unsigned int y_range = max.GetY() - min.GetY() + 1;
-    cout << "x_range: " << x_range << " y_range: " << y_range << endl;
     cells = new Cell *[x_range];
 
     for (unsigned int i = 0; i < x_range; i++) {
@@ -55,7 +55,7 @@ Forest::Forest(const Forest &other): minSize(other.minSize), maxSize(other.maxSi
     }
 }
 
-Forest::Forest(Forest &&other) noexcept: minSize(other.minSize), maxSize(other.maxSize), drones(other.drones),
+Forest::Forest(Forest &&other) noexcept: minSize(move(minSize)), maxSize(move(other.maxSize)), drones(other.drones),
                                          maxNumOfIter(other.maxNumOfIter), globalBest(other.globalBest),
                                          target(other.target), ended(other.ended),
                                          outputFileName(other.outputFileName) {
@@ -126,9 +126,7 @@ void Forest::RemoveDroneFromCell(const TDVector &coordinates) const {
     --cells[x][y];
 }
 
-BinarySearchTree<Drone> Forest::GetDrones() const {
-    return drones;
-}
+
 
 TDVector Forest::GetMinSize() const {
     return minSize;
@@ -139,13 +137,12 @@ TDVector Forest::GetMaxSize() const {
 }
 
 void Forest::PrintTree() const {
-    Node<Drone> *node = drones.GetRoot();
+    Node<Drone*> *node = drones.GetRoot();
     node = node->getLeft();
     PrintNode(node);
 }
 
-void Forest::PrintNode(Node<Drone> *root) const {
-    cout << root->getData() << endl;
+void Forest::PrintNode(Node<Drone*> *root) const {
     if (root->getLeft() != nullptr) {
         PrintNode(root->getLeft());
     }
@@ -157,35 +154,36 @@ void Forest::PrintNode(Node<Drone> *root) const {
 void Forest::StartSearch() {
     unsigned int num_of_iterations = 0;
     while (num_of_iterations < maxNumOfIter) {
-        Node<Drone> *root = drones.GetRoot();
+        Node<Drone*> *root = drones.GetRoot();
         AdvanceDrones(root);
         num_of_iterations++;
         if (ended) {
             break;
         }
-        // drones.print();
 
     }
     EndSearch(num_of_iterations);
 }
 
-void Forest::AdvanceDrones(Node<Drone> *root) {
-    const Cell old_cell = root->getData().GetCurrentCell();
-    const TDVector old_position = root->getData().GetPosition();
-    root->getData().MoveDrone(globalBest, minSize , maxSize );
-    if (root->getData().GetDistanceFromTarget(target) < root->getData().GetPersonalBest() * target) {
-        const TDVector drone_pos = root->getData().GetPosition();
-        root->getData().SetPersonalBest(drone_pos);
+void Forest::AdvanceDrones(Node<Drone*> *root) {
+    const Cell old_cell = root->getData()->GetCurrentCell();
+    const TDVector old_position = root->getData()->GetPosition();
+    root->getData()->MoveDrone(globalBest, minSize , maxSize );
+
+    if (root->getData()->GetDistanceFromTarget(target) < (root->getData()->GetPersonalBest() * target)) {
+        const TDVector drone_pos = root->getData()->GetPosition();
+        root->getData()->SetPersonalBest(drone_pos);
     }
-    const double drone_distance = root->getData().GetDistanceFromTarget(target);
+
+    const double drone_distance = root->getData()->GetDistanceFromTarget(target);
     if (globalBest * target > drone_distance) {
-        globalBest = root->getData().GetPosition();
+        globalBest = root->getData()->GetPosition();
     }
 
     // update cell information if the drone moved to a new cell
-    const Cell new_cell = root->getData().GetCurrentCell();
+    const Cell new_cell = root->getData()->GetCurrentCell();
     if (old_cell != new_cell) {
-        const TDVector new_position = root->getData().GetPosition();
+        const TDVector new_position = root->getData()->GetPosition();
         RemoveDroneFromCell(old_position);
         AddDroneToCell(new_position);
     }
@@ -211,21 +209,19 @@ void Forest::EndSearch(unsigned int numOfIterations) const {
     outfile.close();
 }
 
-void Forest::EndSearchHelper(ofstream &output, Node<Drone> *node) const {
-    Drone drone = node->getData();
-    string drone_type = "bugalu";
-    cout << typeid(drone).name();
-    if (typeid(drone).name() == "SingleRotorDrone") {
+void Forest::EndSearchHelper(ofstream &output, Node<Drone*> *node) const {
+    string drone_type;
+    if (typeid(*node->getData()) == typeid(SingleRotorDrone)) {
         drone_type = 'S';
-    } else if (typeid(drone).name() == "MultiRotorDrone") {
+    } else if (typeid(*node->getData()) == typeid(MultiRotorDrone)) {
         drone_type = 'M';
-    } else if (typeid(drone).name() == "FixedWingDrone") {
+    } else if (typeid(*node->getData()) == typeid(FixedWingDrone)) {
         drone_type = 'W';
-    } else {
+    } else  {
         drone_type = 'H';
     }
     output << drone_type << " ";
-    output << drone.GetPosition().GetX() << " " << drone.GetPosition().GetY() << " ";
+    output << FormatNumber(node->getData()->GetPosition().GetX()) << " " << FormatNumber(node->getData()->GetPosition().GetY()) << " ";
     output << "\n";
     if (node->getLeft() != nullptr) {
         EndSearchHelper(output, node->getLeft());

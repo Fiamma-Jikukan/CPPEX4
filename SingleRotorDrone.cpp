@@ -8,7 +8,6 @@ SingleRotorDrone::~SingleRotorDrone() = default;
 
 void SingleRotorDrone::UpdateSpeed(const TDVector &globalBest, const TDVector &oldPosition,
                                    const TDVector &oldVelocity) {
-    cout<< "Drone::UpdateSpeed from Single rotor" << endl;
     const double r1 = (((double) rand()) / RAND_MAX);
     const double r2 = (((double) rand()) / RAND_MAX);
     constexpr double alpha = 0.01;
@@ -20,7 +19,6 @@ void SingleRotorDrone::UpdateSpeed(const TDVector &globalBest, const TDVector &o
     const TDVector element1 = alpha * oldVelocity;
     const TDVector element2 = beta * r1 * (personal - oldPosition);
     const TDVector element3 = gamma * r2 * (globalBest - oldPosition);
-
 
     const TDVector new_speed = element1 + element2 + element3;
     SetVelocity(new_speed);

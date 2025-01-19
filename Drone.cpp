@@ -79,7 +79,6 @@ Cell Drone::GetCurrentCell() const {
 
 
 void Drone::MoveDrone(const TDVector &globalBest, const TDVector &forestMin, const TDVector &forestMax) {
-    // cout << *this;
 
     const TDVector old_position = position;
     const TDVector old_velocity = velocity;

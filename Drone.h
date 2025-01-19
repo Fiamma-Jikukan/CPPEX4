@@ -8,7 +8,7 @@ using namespace std;
 
 
 class Drone {
-private:
+protected:
     unsigned int id;
     TDVector position;
     TDVector velocity;

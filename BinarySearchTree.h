@@ -61,7 +61,7 @@ public:
             return;
         }
         printNode(node->left);
-        cout << node->getData();
+        cout << node->getData() << " ";
         printNode(node->right);
     }
 };

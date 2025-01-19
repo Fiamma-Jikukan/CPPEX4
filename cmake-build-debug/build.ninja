@@ -73,12 +73,6 @@ build CMakeFiles/CPPEX4.dir/Drone.cpp.o: CXX_COMPILER__CPPEX4_unscanned_Debug /c
   OBJECT_DIR = CMakeFiles/CPPEX4.dir
   OBJECT_FILE_DIR = CMakeFiles/CPPEX4.dir
 
-build CMakeFiles/CPPEX4.dir/Search.cpp.o: CXX_COMPILER__CPPEX4_unscanned_Debug /cygdrive/c/Users/User/CLionProjects/CPPEX4/Search.cpp || cmake_object_order_depends_target_CPPEX4
-  DEP_FILE = CMakeFiles/CPPEX4.dir/Search.cpp.o.d
-  FLAGS = -g -std=gnu++11 -fdiagnostics-color=always
-  OBJECT_DIR = CMakeFiles/CPPEX4.dir
-  OBJECT_FILE_DIR = CMakeFiles/CPPEX4.dir
-
 build CMakeFiles/CPPEX4.dir/TDVector.cpp.o: CXX_COMPILER__CPPEX4_unscanned_Debug /cygdrive/c/Users/User/CLionProjects/CPPEX4/TDVector.cpp || cmake_object_order_depends_target_CPPEX4
   DEP_FILE = CMakeFiles/CPPEX4.dir/TDVector.cpp.o.d
   FLAGS = -g -std=gnu++11 -fdiagnostics-color=always
@@ -123,7 +117,7 @@ build CMakeFiles/CPPEX4.dir/FixedWingHybridVTOL.cpp.o: CXX_COMPILER__CPPEX4_unsc
 #############################################
 # Link the executable CPPEX4.exe
 
-build CPPEX4.exe: CXX_EXECUTABLE_LINKER__CPPEX4_Debug CMakeFiles/CPPEX4.dir/main.cpp.o CMakeFiles/CPPEX4.dir/Cell.cpp.o CMakeFiles/CPPEX4.dir/Forest.cpp.o CMakeFiles/CPPEX4.dir/Drone.cpp.o CMakeFiles/CPPEX4.dir/Search.cpp.o CMakeFiles/CPPEX4.dir/TDVector.cpp.o CMakeFiles/CPPEX4.dir/BinarySearchTree.cpp.o CMakeFiles/CPPEX4.dir/SingleRotorDrone.cpp.o CMakeFiles/CPPEX4.dir/MultiRotorDrone.cpp.o CMakeFiles/CPPEX4.dir/FixedWingDrone.cpp.o CMakeFiles/CPPEX4.dir/FixedWingHybridVTOL.cpp.o
+build CPPEX4.exe: CXX_EXECUTABLE_LINKER__CPPEX4_Debug CMakeFiles/CPPEX4.dir/main.cpp.o CMakeFiles/CPPEX4.dir/Cell.cpp.o CMakeFiles/CPPEX4.dir/Forest.cpp.o CMakeFiles/CPPEX4.dir/Drone.cpp.o CMakeFiles/CPPEX4.dir/TDVector.cpp.o CMakeFiles/CPPEX4.dir/BinarySearchTree.cpp.o CMakeFiles/CPPEX4.dir/SingleRotorDrone.cpp.o CMakeFiles/CPPEX4.dir/MultiRotorDrone.cpp.o CMakeFiles/CPPEX4.dir/FixedWingDrone.cpp.o CMakeFiles/CPPEX4.dir/FixedWingHybridVTOL.cpp.o
   FLAGS = -g
   LINK_FLAGS = -Wl,--enable-auto-import
   OBJECT_DIR = CMakeFiles/CPPEX4.dir

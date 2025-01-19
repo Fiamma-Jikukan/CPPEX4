@@ -121,7 +121,6 @@ void Search::EndSearch(const unsigned int numOfIterations) const {
 void Search::EndSearchHelper(ofstream &output, Node<Drone> *node) const {
     Drone drone = node->getData();
     string drone_type = "bugalu";
-    cout << typeid(drone).name();
     if (typeid(drone).name() == "SingleRotorDrone") {
         drone_type = 'S';
     } else if (typeid(drone).name() == "MultiRotorDrone") {
