@@ -4,10 +4,10 @@
 
 #include "FixedWingDrone.h"
 #include "MultiRotorDrone.h"
-#include "SingleRotorDrone.h"#include "TDVector.h"
+#include "SingleRotorDrone.h"
+#include "TDVector.h"
 #include "BinarySearchTree.h"
 #include <fstream>
-
 
 
 class Forest {
@@ -15,21 +15,21 @@ private:
     TDVector minSize;
     TDVector maxSize;
     Cell **cells;
-    BinarySearchTree<Drone*> drones;
+    BinarySearchTree<Drone *> drones;
     unsigned int maxNumOfIter;
-    TDVector globalBest; // the possition of the drone that is closest to the target
+    TDVector globalBest; // the position of the drone closest to the target
     TDVector target;
     bool ended; // indicates if the target was reached
     string outputFileName;
 
-
 public:
-    Forest( const TDVector &min, const TDVector &max, const BinarySearchTree<Drone*> &drones, unsigned int max_num_of_iter,
+    Forest(const TDVector &min, const TDVector &max, const BinarySearchTree<Drone *> &drones,
+           unsigned int max_num_of_iter,
            const TDVector &global_best, const TDVector &target, bool ended, const string &outputFileName);
 
     ~Forest();
 
-    void FreeData() ;
+    void FreeData();
 
     Forest(const Forest &other);
 
@@ -49,23 +49,17 @@ public:
 
     TDVector GetMaxSize() const;
 
-    void PrintTree() const;
-
-    void PrintNode( Node<Drone*> * root) const;
-
     void StartSearch();
 
-    void AdvanceDrones(Node<Drone*> *root);
+    void AdvanceDrones(Node<Drone *> *root);
 
     void EndSearch(unsigned int numOfIterations) const;
 
-    void EndSearchHelper(ofstream &output, Node<Drone*> *node) const;
+    void EndSearchHelper(ofstream &output, Node<Drone *> *node) const;
 
     Cell GetTargetCell() const;
 
     static double FormatNumber(double number);
-
-    friend std::ostream &operator<<(std::ostream &os, const Forest &forest);
 };
 
 

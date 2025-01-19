@@ -117,6 +117,7 @@ void Drone::UpdateSpeed(const TDVector &globalBest, const TDVector &oldPosition,
     SetVelocity(new_speed);
 }
 
+
 bool Drone::operator<(const Drone &other) const {
     return id < other.id;
 }
@@ -128,6 +129,8 @@ bool Drone::operator>(const Drone &other) const {
 bool Drone::operator==(const Drone &other) const {
     return id == other.id;
 }
+
+
 
 bool Drone::operator!=(const Drone &other) const {
     return id != other.id;

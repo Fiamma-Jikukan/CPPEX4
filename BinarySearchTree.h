@@ -20,11 +20,11 @@ public:
 
     ~Node() = default;
 
-    T& getData() {
+    T &getData() {
         return data;
     }
 
-    const T& getData() const {
+    const T &getData() const {
         return data;
     }
 
@@ -77,23 +77,19 @@ public:
 
     ~BinarySearchTree();
 
-    void ClearTree(Node<T>* node);
+    void ClearTree(Node<T> *node); // clear every subtree under node
 
-    void clear();
-
-
-
-    // BinarySearchTree(const BinarySearchTree&) = default;
-    // BinarySearchTree& operator=(const BinarySearchTree&) = default;
+    void clear(); // clear entire tree
 
     void insert(T &data);
 
     BinarySearchTree(const BinarySearchTree &other);
 
-    Node<T>* copySubtree(Node<T>* otherNode, Node<T>* parent);
+    Node<T> *copySubtree(Node<T> *otherNode, Node<T> *parent);
 
+    BinarySearchTree<T> &operator=(const BinarySearchTree &other);
 
-    Node<T> * search(T &data);
+    Node<T> *search(T &data);
 
     Node<T> *min();
 
@@ -108,8 +104,8 @@ public:
     void print();
 
     unsigned int GetSize() const;
-    Node<T> * GetRoot() const;
 
+    Node<T> *GetRoot() const;
 };
 
 

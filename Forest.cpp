@@ -1,11 +1,13 @@
 #include "Forest.h"
 
 
-Forest::Forest(const TDVector &min, const TDVector &max, const BinarySearchTree<Drone*> &drones,
+Forest::Forest(const TDVector &min, const TDVector &max, const BinarySearchTree<Drone *> &drones,
                unsigned int max_num_of_iter,
-               const TDVector &global_best, const TDVector &target, bool ended, const string &outputFileName): minSize(min),
-                                                                                                         maxSize(max), drones(drones), maxNumOfIter(max_num_of_iter), globalBest(global_best), target(target), ended(ended),
-                                                                                                         outputFileName(outputFileName) {
+               const TDVector &global_best, const TDVector &target, bool ended,
+               const string &outputFileName): minSize(min),
+                                              maxSize(max), drones(drones), maxNumOfIter(max_num_of_iter),
+                                              globalBest(global_best), target(target), ended(ended),
+                                              outputFileName(outputFileName) {
     const unsigned int x_range = max.GetX() - min.GetX() + 1;
     const unsigned int y_range = max.GetY() - min.GetY() + 1;
     cells = new Cell *[x_range];
@@ -127,7 +129,6 @@ void Forest::RemoveDroneFromCell(const TDVector &coordinates) const {
 }
 
 
-
 TDVector Forest::GetMinSize() const {
     return minSize;
 }
@@ -136,39 +137,23 @@ TDVector Forest::GetMaxSize() const {
     return maxSize;
 }
 
-void Forest::PrintTree() const {
-    Node<Drone*> *node = drones.GetRoot();
-    node = node->getLeft();
-    PrintNode(node);
-}
-
-void Forest::PrintNode(Node<Drone*> *root) const {
-    if (root->getLeft() != nullptr) {
-        PrintNode(root->getLeft());
-    }
-    if (root->getRight() != nullptr) {
-        PrintNode(root->getRight());
-    }
-}
-
 void Forest::StartSearch() {
     unsigned int num_of_iterations = 0;
     while (num_of_iterations < maxNumOfIter) {
-        Node<Drone*> *root = drones.GetRoot();
+        Node<Drone *> *root = drones.GetRoot();
         AdvanceDrones(root);
         num_of_iterations++;
         if (ended) {
             break;
         }
-
     }
     EndSearch(num_of_iterations);
 }
 
-void Forest::AdvanceDrones(Node<Drone*> *root) {
+void Forest::AdvanceDrones(Node<Drone *> *root) {
     const Cell old_cell = root->getData()->GetCurrentCell();
     const TDVector old_position = root->getData()->GetPosition();
-    root->getData()->MoveDrone(globalBest, minSize , maxSize );
+    root->getData()->MoveDrone(globalBest, minSize, maxSize);
 
     if (root->getData()->GetDistanceFromTarget(target) < (root->getData()->GetPersonalBest() * target)) {
         const TDVector drone_pos = root->getData()->GetPosition();
@@ -202,14 +187,14 @@ void Forest::AdvanceDrones(Node<Drone*> *root) {
     }
 }
 
-void Forest::EndSearch(unsigned int numOfIterations) const {
+void Forest::EndSearch(const unsigned int numOfIterations) const {
     ofstream outfile(outputFileName);
     outfile << numOfIterations << "\n";
     EndSearchHelper(outfile, drones.GetRoot());
     outfile.close();
 }
 
-void Forest::EndSearchHelper(ofstream &output, Node<Drone*> *node) const {
+void Forest::EndSearchHelper(ofstream &output, Node<Drone *> *node) const {
     string drone_type;
     if (typeid(*node->getData()) == typeid(SingleRotorDrone)) {
         drone_type = 'S';
@@ -217,11 +202,12 @@ void Forest::EndSearchHelper(ofstream &output, Node<Drone*> *node) const {
         drone_type = 'M';
     } else if (typeid(*node->getData()) == typeid(FixedWingDrone)) {
         drone_type = 'W';
-    } else  {
+    } else {
         drone_type = 'H';
     }
     output << drone_type << " ";
-    output << FormatNumber(node->getData()->GetPosition().GetX()) << " " << FormatNumber(node->getData()->GetPosition().GetY()) << " ";
+    output << FormatNumber(node->getData()->GetPosition().GetX()) << " " << FormatNumber(
+        node->getData()->GetPosition().GetY());
     output << "\n";
     if (node->getLeft() != nullptr) {
         EndSearchHelper(output, node->getLeft());
@@ -229,25 +215,6 @@ void Forest::EndSearchHelper(ofstream &output, Node<Drone*> *node) const {
     if (node->getRight() != nullptr) {
         EndSearchHelper(output, node->getRight());
     }
-}
-
-
-std::ostream &operator<<(std::ostream &os, const Forest &forest) {
-    os << "min size: " << forest.minSize << " max size: " << forest.maxSize << " " << endl << "  ";
-    for (unsigned int j = 0; j < forest.maxSize.GetX(); j++) {
-        os << j << " ";
-    }
-    os << endl;
-    int i = 0;
-    for (unsigned int y = forest.minSize.GetY(); y < forest.maxSize.GetY(); y++) {
-        os << i << " ";
-        for (unsigned int x = forest.minSize.GetX(); x < forest.maxSize.GetX(); x++) {
-            os << forest(x, y) << " ";
-        }
-        i++;
-        os << endl;
-    }
-    return os;
 }
 
 Cell Forest::GetTargetCell() const {

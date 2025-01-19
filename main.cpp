@@ -1,7 +1,6 @@
 #include <fstream>
 #include <sstream>
-#include "Search.h"
-#include "BinarySearchTree.h"
+#include "Forest.h"
 #include "FixedWingDrone.h"
 #include "FixedWingHybridVTOL.h"
 #include "MultiRotorDrone.h"
@@ -11,7 +10,7 @@ using namespace std;
 // validate input and output files
 bool ValidateConfig(const string &config);
 
-bool ValidateInit(const string &init, TDVector &forestMin, TDVector &forestMax);
+bool ValidateInit(const string &init);
 
 bool ValidateOutput(const string &output);
 
@@ -27,9 +26,9 @@ unsigned int GetMaxIter(const string &input1);
 TDVector GetGlobalBest(const string &input2, const TDVector &target);
 
 // build the drone tree
-BinarySearchTree<Drone*> GetDroneTree(const string &input2);
+BinarySearchTree<Drone *> GetDroneTree(const string &input2, const TDVector &forestMin, const TDVector &forestMax);
 
-void PlaceDrones(Forest &forest, Node<Drone*> *root);
+void PlaceDrones(Forest &forest, Node<Drone *> *root);
 
 bool CheckDroneType(char droneType);
 
@@ -38,21 +37,23 @@ bool MakeRandSeed(const string &inputRand);
 
 
 int main(const int argc, char **argv) {
-
     // validate input
     if (argc != 4 && argc != 5) {
-        cerr << "Error; invalid input - args arn't right" << endl;
+        cerr << "Error; invalid input" << endl;
         return 1;
     }
-    const bool validConfig = ValidateConfig(argv[1]);
+    const string config = argv[1];
+    const string init = argv[2];
+    const string output = argv[3];
+    const bool validConfig = ValidateConfig(config);
     if (!validConfig) {
-        cerr << "Error; invalid input - config is not right" << endl;
+        cerr << "Error; invalid input" << endl;
         return 1;
     }
-    TDVector max = GetForestMax(argv[1]);
-    TDVector min = GetForestMin(argv[1]);
-    const bool validInit = ValidateInit(argv[2], min, max);
-    const bool validOutput = ValidateOutput(argv[3]);
+    const TDVector max = GetForestMax(config);
+    const TDVector min = GetForestMin(config);
+    const bool validInit = ValidateInit(init);
+    const bool validOutput = ValidateOutput(output);
     if (argc == 5) {
         const string seedInput = argv[4];
         if (MakeRandSeed(seedInput) == false) {
@@ -60,21 +61,20 @@ int main(const int argc, char **argv) {
         }
     }
 
-    if ( !validInit || !validOutput) {
-        cerr << "Error; invalid input - init is not right or output is not right :(" << endl;
+    if (!validInit || !validOutput) {
+        cerr << "Error; invalid input" << endl;
         return 1;
     }
 
     // get data
-    const TDVector target = GetTarget(argv[1]);
-    const unsigned int maxIter = GetMaxIter(argv[1]);
-    const BinarySearchTree<Drone*> drone_tree = GetDroneTree(argv[2]);
-    const TDVector globalBest = GetGlobalBest(argv[2], target);
-    const string output = argv[3];
+    const TDVector target = GetTarget(config);
+    const unsigned int maxIter = GetMaxIter(config);
+    const BinarySearchTree<Drone *> drone_tree = GetDroneTree(init, min, max);
+    const TDVector globalBest = GetGlobalBest(init, target);
 
     // build forest and start search
-    Forest forest(min, max,drone_tree, maxIter, globalBest, target, false, output );
-    Node<Drone*> *root = drone_tree.GetRoot();
+    Forest forest(min, max, drone_tree, maxIter, globalBest, target, false, output);
+    Node<Drone *> *root = drone_tree.GetRoot();
     PlaceDrones(forest, root);
     forest.StartSearch();
 
@@ -89,7 +89,7 @@ bool ValidateConfig(const string &config) {
     }
     // validate forest size
     unsigned int forest_x_min, forest_x_max, forest_y_min, forest_y_max;
-    if (!(config_file >> forest_x_min >> forest_y_min  >> forest_x_max >> forest_y_max)) {
+    if (!(config_file >> forest_x_min >> forest_y_min >> forest_x_max >> forest_y_max)) {
         config_file.close();
         return false;
     }
@@ -122,7 +122,7 @@ bool ValidateConfig(const string &config) {
     return true;
 }
 
-bool ValidateInit(const string &init, TDVector &forestMin, TDVector &forestMax) {
+bool ValidateInit(const string &init) {
     ifstream init_file(init);
     if (!init_file.is_open()) {
         return false;
@@ -149,11 +149,6 @@ bool ValidateInit(const string &init, TDVector &forestMin, TDVector &forestMax) 
             init_file.close();
             return false;
         }
-        if (pos_x < forestMin.GetX() || pos_x > forestMax.GetX() || pos_y < forestMin.GetY() || pos_y > forestMax.
-            GetY()) {
-            init_file.close();
-            return false;
-        }
     }
     double extra_data;
     if (init_file >> extra_data) {
@@ -172,23 +167,6 @@ bool ValidateOutput(const string &output) {
     output_file.close();
     return true;
 }
-
-// Drone *GetDrones(const string &input2) {
-//     ifstream input_drones(input2);
-//     unsigned int num_of_drones;
-//     input_drones >> num_of_drones;
-//     Drone *drones = new Drone[num_of_drones];
-//     for (unsigned int drone = 0; drone < num_of_drones; drone++) {
-//         double pos_x, pos_y, vel_x, vel_y;
-//         input_drones >> pos_x >> pos_y >> vel_x >> vel_y;
-//         TDVector pos = TDVector(pos_x, pos_y);
-//         TDVector vel = TDVector(vel_x, vel_y);
-//         const Drone d(drone, pos, vel, pos);
-//         drones[drone] = d;
-//     }
-//     input_drones.close();
-//     return drones;
-// }
 
 unsigned int GetNumOfDrones(const string &input2) {
     ifstream input_drones(input2);
@@ -256,8 +234,8 @@ TDVector GetGlobalBest(const string &input2, const TDVector &target) {
 }
 
 
-BinarySearchTree<Drone*> GetDroneTree(const string &input2) {
-    BinarySearchTree<Drone*> *tree = new BinarySearchTree<Drone*>();
+BinarySearchTree<Drone *> GetDroneTree(const string &input2, const TDVector &forestMin, const TDVector &forestMax) {
+    BinarySearchTree<Drone*> tree;
     unsigned int num_of_drones;
     ifstream input_target(input2);
     input_target >> num_of_drones;
@@ -265,21 +243,35 @@ BinarySearchTree<Drone*> GetDroneTree(const string &input2) {
         char type_of_drone;
         double pos_x, pos_y, vel_x, vel_y;
         input_target >> type_of_drone >> pos_x >> pos_y >> vel_x >> vel_y;
-        TDVector pos = TDVector(pos_x, pos_y);
-        TDVector vel = TDVector(vel_x, vel_y);
+        // make sure drones are withing the given range of the forest
+        if (pos_x < forestMin.GetX()) {
+            pos_x = forestMin.GetX();
+        }
+        if (pos_x > forestMax.GetX()) {
+            pos_x = forestMax.GetX();
+        }
+        if (pos_y < forestMin.GetY()) {
+            pos_y = forestMin.GetY();
+        }
+        if (pos_y > forestMax.GetY()) {
+            pos_y = forestMax.GetY();
+        }
+        TDVector pos(pos_x, pos_y);
+        TDVector vel(vel_x, vel_y);
         Drone *drone;
         if (type_of_drone == 'S') {
-           drone = new SingleRotorDrone(droneID, pos, vel, pos);
+            drone = new SingleRotorDrone(droneID, pos, vel, pos);
         } else if (type_of_drone == 'M') {
             drone = new MultiRotorDrone(droneID, pos, vel, pos);
         } else if (type_of_drone == 'W') {
-           drone = new FixedWingDrone(droneID, pos, vel, pos);
+            drone = new FixedWingDrone(droneID, pos, vel, pos);
         } else if (type_of_drone == 'H') {
-           drone = new FixedWingHybridVTOL(droneID, pos, vel, pos);
+            drone = new FixedWingHybridVTOL(droneID, pos, vel, pos);
         }
-        tree->insert(drone);
+        tree.insert(drone);
     }
-    return *tree;
+
+    return tree;
 }
 
 bool MakeRandSeed(const string &inputRand) {
@@ -299,8 +291,8 @@ bool CheckDroneType(const char droneType) {
     return true;
 }
 
-void PlaceDrones(Forest &forest, Node<Drone*> *root) {
-    TDVector cell_coordinate = root->getData()->GetPosition();
+void PlaceDrones(Forest &forest, Node<Drone *> *root) {
+    const TDVector cell_coordinate = root->getData()->GetPosition();
     forest.AddDroneToCell(cell_coordinate);
     if (root->getLeft() != nullptr) {
         PlaceDrones(forest, root->getLeft());
