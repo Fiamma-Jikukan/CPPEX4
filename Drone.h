@@ -30,7 +30,6 @@ public:
 
     Drone &operator=(Drone &&other) noexcept;
 
-
     unsigned int GetId() const;
 
     TDVector GetPosition() const;

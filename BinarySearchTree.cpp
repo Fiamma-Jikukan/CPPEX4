@@ -193,12 +193,6 @@ void BinarySearchTree<T>::removeHelper(Node<T> *node) {
     }
 }
 
-
-template<class T>
-void BinarySearchTree<T>::clear() const {
-    delete root;
-}
-
 template<class T>
 void BinarySearchTree<T>::print() {
     if (root == nullptr) {
@@ -208,11 +202,11 @@ void BinarySearchTree<T>::print() {
 }
 
 template<class T>
-unsigned int BinarySearchTree<T>::GetSize() const {
+unsigned int BinarySearchTree<T>::getSize() const {
     return size;
 }
 
 template<class T>
-Node<T> *BinarySearchTree<T>::GetRoot() const {
+Node<T> *BinarySearchTree<T>::getRoot() const {
     return root;
 }

@@ -61,7 +61,7 @@ public:
             return;
         }
         printNode(node->left);
-        cout << node->getData() << " ";
+        cout << *node->getData();
         printNode(node->right);
     }
 };
@@ -77,7 +77,7 @@ public:
 
     ~BinarySearchTree();
 
-    void ClearTree(Node<T> *node); // clear every subtree under node
+    void ClearTree(Node<T> *node); // clear every subtree under a node
 
     void clear(); // clear entire tree
 
@@ -99,13 +99,11 @@ public:
 
     void removeHelper(Node<T> *node);
 
-    void clear() const;
-
     void print();
 
-    unsigned int GetSize() const;
+    unsigned int getSize() const;
 
-    Node<T> *GetRoot() const;
+    Node<T> *getRoot() const;
 };
 
 

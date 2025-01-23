@@ -69,12 +69,12 @@ int main(const int argc, char **argv) {
     // get data
     const TDVector target = GetTarget(config);
     const unsigned int maxIter = GetMaxIter(config);
-    const BinarySearchTree<Drone *> drone_tree = GetDroneTree(init, min, max);
+    BinarySearchTree<Drone *> drone_tree = GetDroneTree(init, min, max);
     const TDVector globalBest = GetGlobalBest(init, target);
 
     // build forest and start search
     Forest forest(min, max, drone_tree, maxIter, globalBest, target, false, output);
-    Node<Drone *> *root = drone_tree.GetRoot();
+    Node<Drone *> *root = drone_tree.getRoot();
     PlaceDrones(forest, root);
     forest.StartSearch();
 
@@ -235,7 +235,7 @@ TDVector GetGlobalBest(const string &input2, const TDVector &target) {
 
 
 BinarySearchTree<Drone *> GetDroneTree(const string &input2, const TDVector &forestMin, const TDVector &forestMax) {
-    BinarySearchTree<Drone*> tree;
+    BinarySearchTree<Drone *> tree;
     unsigned int num_of_drones;
     ifstream input_target(input2);
     input_target >> num_of_drones;
@@ -270,7 +270,6 @@ BinarySearchTree<Drone *> GetDroneTree(const string &input2, const TDVector &for
         }
         tree.insert(drone);
     }
-
     return tree;
 }
 

@@ -140,7 +140,7 @@ TDVector Forest::GetMaxSize() const {
 void Forest::StartSearch() {
     unsigned int num_of_iterations = 0;
     while (num_of_iterations < maxNumOfIter) {
-        Node<Drone *> *root = drones.GetRoot();
+        Node<Drone *> *root = drones.getRoot();
         AdvanceDrones(root);
         num_of_iterations++;
         if (ended) {
@@ -190,7 +190,7 @@ void Forest::AdvanceDrones(Node<Drone *> *root) {
 void Forest::EndSearch(const unsigned int numOfIterations) const {
     ofstream outfile(outputFileName);
     outfile << numOfIterations << "\n";
-    EndSearchHelper(outfile, drones.GetRoot());
+    EndSearchHelper(outfile, drones.getRoot());
     outfile.close();
 }
 
